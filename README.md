@@ -20,14 +20,47 @@ brew install fd fzf
 
 ## Install
 
-Clone this repo somewhere, then source `fcd.sh` from your shell rc file.
+1. Install the dependencies:
 
-```sh
-git clone https://github.com/keith991001/fcd.git ~/.fcd
-echo 'source ~/.fcd/fcd.sh' >> ~/.zshrc   # or ~/.bashrc
-```
+   ```sh
+   brew install fd fzf
+   ```
 
-Open a new shell (or `source ~/.zshrc`) and `fcd` is ready.
+2. Clone this repo somewhere on your machine:
+
+   ```sh
+   git clone https://github.com/keith991001/fcd.git ~/.fcd
+   ```
+
+3. Register `fcd.sh` in your shell startup file so it loads on every new shell:
+
+   ```sh
+   echo 'source ~/.fcd/fcd.sh' >> ~/.zshrc   # or ~/.bashrc
+   ```
+
+4. Reload your current shell (or just open a new terminal):
+
+   ```sh
+   source ~/.zshrc
+   ```
+
+`fcd` is now available.
+
+## Why does it need `source`?
+
+`fcd` is a shell **function**, not a standalone executable. Functions only exist
+inside the shell process that defined them, so running `bash fcd.sh` would spawn
+a subshell, define the function there, and then throw it away when the subshell
+exits — your interactive shell would still not know about `fcd`.
+
+`source` (a.k.a. `.`) runs a file's contents in the *current* shell, keeping
+whatever it defines. Adding the `source` line to `~/.zshrc` makes every new
+shell run it at startup, so `fcd` is always available.
+
+The function also needs to run in your current shell because `cd` only affects
+the shell that executes it — a subshell's `cd` cannot change your interactive
+shell's working directory. That is why tools like `nvm`, `rbenv`, and
+`zoxide init` also require sourcing rather than being called as scripts.
 
 ## How it works
 
