@@ -6,6 +6,18 @@
 
 fcd() {
   local dir
-  dir=$(fd -t d . ~ 2>/dev/null | fzf --select-1 --exit-0 --query "${1:-}") || return
+  dir=$(fd -t d -H . ~ \
+          --exclude Library \
+          --exclude .cache \
+          --exclude .npm \
+          --exclude node_modules \
+          --exclude .git \
+          --exclude tmp \
+          --exclude log \
+          --exclude vendor \
+          --exclude .venv \
+        2>/dev/null | fzf --select-1 --exit-0 \
+                          --tiebreak=end,length \
+                          --query "${1:-}") || return
   [ -n "$dir" ] && cd "$dir"
 }
