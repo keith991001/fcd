@@ -67,13 +67,21 @@ shell's working directory. That is why tools like `nvm`, `rbenv`, and
 ```sh
 fcd() {
   local dir
-  dir=$(fd -t d . ~ 2>/dev/null | fzf --select-1 --exit-0 --query "${1:-}") || return
+  dir=$(fd -t d -H . ~ \
+          --exclude Library --exclude .cache --exclude .npm \
+          --exclude node_modules --exclude .git \
+          --exclude tmp --exclude log --exclude vendor --exclude .venv \
+        2>/dev/null | fzf --select-1 --exit-0 \
+                          --tiebreak=end,length \
+                          --query "${1:-}") || return
   [ -n "$dir" ] && cd "$dir"
 }
 ```
 
-- `fd -t d . ~` lists every directory under your home.
+- `fd -t d -H . ~` lists every directory under your home, including hidden ones like `.ssh` and `.config`.
+- `--exclude` skips noisy paths (macOS `Library`, build caches, `.git` internals, and common monorepo dirs like `vendor` / `tmp` / `log`) so the picker stays usable.
 - `fzf --query "${1:-}"` opens the fuzzy picker, prefilled with your argument (if any).
+- `--tiebreak=end,length` prefers matches at the end of the path, then shorter paths — so searching for `project` puts `.../project/` above `.../project/src/lib/`.
 - `--select-1` auto-selects when there is only one match, so `fcd unique-name` jumps immediately.
 - `--exit-0` bails out silently when nothing matches.
 - The `local dir` + `[ -n "$dir" ]` guard prevents `cd ""` (which would send you to `$HOME`) if you press `Esc`.
